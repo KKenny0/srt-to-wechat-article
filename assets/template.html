@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TITLE}}</title>
+  <style>
+    /* 仅供网页本地预览与工具栏样式的基本重置，不影响公众号正文内联样式 */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #f7f6f2;
+      color: #333333;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      padding: 40px 20px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* 悬浮操作栏 */
+    .toolbar {
+      position: sticky;
+      top: 20px;
+      z-index: 999;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid #e0dfdb;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      border-radius: 30px;
+      padding: 8px 18px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .toolbar button {
+      background-color: #10a37f;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .toolbar button:hover {
+      background-color: #0d8a6a;
+      transform: translateY(-1px);
+    }
+    .toolbar .tips {
+      font-size: 13px;
+      color: #666;
+    }
+    /* 纸张容器 */
+    .paper-container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 740px;
+      border: 1px solid #e8e7e3;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+      padding: 50px 45px;
+      border-radius: 4px;
+    }
+    @media (max-width: 640px) {
+      .paper-container {
+        padding: 30px 20px;
+      }
+      .toolbar {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+    /* 复制成功 Toast */
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 网页工具条（不包含在微信正文中） -->
+  <div class="toolbar" id="top-toolbar">
+    <button onclick="copyToWeChat()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+      一键复制到微信公众号
+    </button>
+    <span class="tips">点击后直接到微信公众平台后台「Ctrl + V」粘贴</span>
+  </div>
+
+  <div id="toast">✅ 已复制富文本！请直接在微信公众号编辑器粘贴</div>
+
+  <!-- 正文核心容器（全部使用微信兼容的高兼容内联样式） -->
+  <div class="paper-container">
+    <div id="wechat-article" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; font-size: 15px; color: #2b2b2b; line-height: 1.85; letter-spacing: 0.5px; word-break: break-word;">
+
+      <!-- 顶部眉栏 -->
+      <section style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a1a1a; padding-bottom: 8px; margin-bottom: 12px; font-family: -apple-system, BlinkMacSystemFont, monospace, sans-serif; font-size: 11px; letter-spacing: 1.5px; color: #777; text-transform: uppercase;">
+        <span style="font-weight: 700; color: #222;">ARTICLE —— FINAL</span>
+        <span>野生肯尼 PAGE —— {{DATE}}</span>
+      </section>
+
+      <!-- 次级元数据 -->
+      <section style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #888; margin-bottom: 16px;">
+        <span>AUTHOR <strong style="color: #444; font-weight: 600;">{{AUTHOR}}</strong> 整理 &nbsp;·&nbsp; DATE <strong style="color: #444; font-weight: 600;">{{DATE}}</strong> &nbsp;·&nbsp; READING <strong style="color: #444; font-weight: 600;">约 {{READ_TIME}} 分钟</strong></span>
+      </section>
+
+      <!-- 标签胶囊 -->
+      <section style="margin-bottom: 24px;">
+        {{TAGS_HTML}}
+      </section>
+
+      <!-- 文章主标题 -->
+      <h1 style="font-size: 28px; line-height: 1.35; font-weight: 800; color: #111111; margin: 24px 0 14px; font-family: 'PingFang SC', 'Noto Serif SC', 'Source Han Serif SC', serif;">
+        {{TITLE}}
+      </h1>
+
+      <!-- 副标题 / 导语 -->
+      <p style="font-size: 15px; line-height: 1.65; color: #555555; margin-bottom: 24px;">
+        {{SUBTITLE}}
+      </p>
+
+      <section style="border-top: 1px solid #e5e5e5; margin: 20px 0;"></section>
+
+      <!-- 来源与元信息浅灰卡片 -->
+      <section style="background-color: #ededed; border-radius: 4px; padding: 15px 18px; margin: 22px 0; font-size: 13px; line-height: 1.7; color: #666666;">
+        {{SOURCE_BOX_HTML}}
+      </section>
+
+      <!-- 正文章节主体内容 -->
+      {{CONTENT_HTML}}
+
+    </div>
+  </div>
+
+  <script>
+    async function copyToWeChat() {
+      const container = document.getElementById('wechat-article');
+      if (!container) return;
+
+      const toast = document.getElementById('toast');
+      const showToast = (msg) => {
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 3000);
+      };
+
+      try {
+        // 使用现代剪贴板 API 写入 text/html 富文本
+        const htmlContent = container.outerHTML;
+        const textContent = container.innerText;
+        const blobHtml = new Blob([htmlContent], { type: 'text/html' });
+        const blobText = new Blob([textContent], { type: 'text/plain' });
+        
+        const data = [new ClipboardItem({
+          'text/html': blobHtml,
+          'text/plain': blobText
+        })];
+
+        await navigator.clipboard.write(data);
+        showToast('✅ 已复制富文本！请直接在微信公众号编辑器粘贴 (Ctrl+V)');
+      } catch (err) {
+        // 降级方案：使用 Selection API 选区选中并触发复制
+        console.warn('ClipboardItem API fallback:', err);
+        const range = document.createRange();
+        range.selectNode(container);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        try {
+          const successful = document.execCommand('copy');
+          selection.removeAllRanges();
+          if (successful) {
+            showToast('✅ 已选中并复制！请直接在微信公众号后台粘贴');
+          } else {
+            showToast('⚠️ 复制失败，请手动全选正文并复制');
+          }
+        } catch (e) {
+          selection.removeAllRanges();
+          showToast('⚠️ 复制失败，请手动全选正文并复制');
+        }
+      }
+    }
+  </script>
+</body>
+</html>
